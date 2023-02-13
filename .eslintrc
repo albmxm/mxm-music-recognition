@@ -1,0 +1,56 @@
+{
+  "extends": [
+    "universe/native",
+    "universe/node",
+    "universe/web",
+    "plugin:react-hooks/recommended"
+  ],
+  "plugins": ["prefer-arrow"],
+  "globals": { "_cio": "readonly" },
+  "rules": {
+    "import/no-extraneous-dependencies": ["error"],
+    "import/order": [
+      "warn",
+      {
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": false
+        },
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "newlines-between": "always"
+      }
+    ],
+    "no-unused-expressions": "off",
+    "padding-line-between-statements": [
+      "error",
+      { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
+      { "blankLine": "always", "prev": "*", "next": "block-like" },
+      { "blankLine": "always", "prev": "block-like", "next": "*" },
+      {
+        "blankLine": "any",
+        "prev": ["const", "let", "var"],
+        "next": ["const", "let", "var"]
+      },
+      { "blankLine": "always", "prev": "*", "next": "return" },
+      { "blankLine": "always", "prev": "import", "next": "*" },
+      { "blankLine": "any", "prev": "import", "next": "import" },
+      { "blankLine": "always", "prev": "*", "next": "export" },
+      { "blankLine": "any", "prev": "export", "next": "export" }
+    ],
+    "sort-vars": ["error", { "ignoreCase": true }],
+    "@typescript-eslint/no-unused-expressions": ["warn"],
+    "prefer-arrow/prefer-arrow-functions": [
+      "warn",
+      {
+        "disallowPrototype": true
+      }
+    ]
+  }
+}
