@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   withRepeat,
   withSpring,
+  WithSpringConfig,
   withTiming,
 } from "react-native-reanimated";
 
@@ -22,7 +23,17 @@ export const Home = ({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, "Home">) => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const animValue = useRef(new Animated.Value(0)).current;
+
+  const buttonShaking = useSharedValue(0.5);
+  const buttonShakingStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: interpolate(buttonShaking.value, [0, 1], [-10, 10]),
+        },
+      ],
+    };
+  });
 
   const handleStartRecording = async () => {
     const response = await Audio.requestPermissionsAsync();
@@ -57,15 +68,56 @@ export const Home = ({
     if (uri) {
       const result = await identify(uri);
 
-      const musicInfo = result.metadata.music[0];
+      if (result.metadata) {
+        const musicInfo = result.metadata.music[0];
 
-      navigation.push("Detail", {
-        title: musicInfo.title,
-        album: musicInfo.album.name,
-        artist: musicInfo.artists[0].name,
-      });
+        navigation.push("Detail", {
+          title: musicInfo.title,
+          album: musicInfo.album.name,
+          artist: musicInfo.artists[0].name,
+        });
+      } else {
+        // TODO: parte animazione
+        const springConfig: WithSpringConfig = {
+          stiffness: 100,
+          mass: 1,
+        };
+
+        // buttonShaking.value = withSpring(1, springConfig, () => {
+        //   buttonShaking.value = withRepeat(
+        //     withSpring(0, springConfig),
+        //     5,
+        //     true,
+        //     () => {
+        //       buttonShaking.value = withSpring(0.5, springConfig);
+        //     }
+        //   );
+        // });
+        const shakingDuration = 60;
+
+        buttonShaking.value = withTiming(
+          1,
+          {
+            duration: shakingDuration / 2,
+            easing: Easing.linear,
+          },
+          () => {
+            buttonShaking.value = withRepeat(
+              withTiming(0, {
+                duration: shakingDuration,
+                easing: Easing.linear,
+              }),
+              2,
+              true,
+              () => {
+                buttonShaking.value = withSpring(0.5);
+              }
+            );
+          }
+        );
+      }
     }
-  }, [navigation, recording]);
+  }, [buttonShaking, navigation, recording]);
 
   useEffect(() => {
     if (recording) {
@@ -112,7 +164,7 @@ export const Home = ({
       {recording ? (
         <Animated.View style={[circleStyle, styles.animatedCircle]} />
       ) : null}
-      <Animated.View style={buttonStyle}>
+      <Animated.View style={[buttonStyle, buttonShakingStyle]}>
         <Pressable
           onPressIn={() => {
             buttonSize.value = 0.9;
